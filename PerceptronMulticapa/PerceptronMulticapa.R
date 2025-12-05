@@ -10,7 +10,7 @@ set.seed(123)
 # ==============================================================================
 # 2. CARGA Y PREPROCESAMIENTO DE LOS DATOS
 # ==============================================================================
-mnist <- dataset_mnist()  # Carga el conjunto de datos MNIST, que contiene imágenes de dígitos escritos a mano
+mnist <- dataset_mnist() 
 
 # Selección de las primeras 1000 imágenes de entrenamiento y 250 de prueba
 x_train <- mnist$train$x[1:1000, , ]  
