@@ -1,14 +1,22 @@
 # SUPPORT VECTOR MACHINE MODEL
 
+python_path <- "C:/Users/angel/AppData/Local/Programs/Python/Python313/python.exe"
+use_python(python_path, required = TRUE)
+
 ######################################
 
 # 1) Cargamos las librerías necesarias
 # keras para importar la Base de Datos
 # e1071 para usar SVM
 install.packages("keras")
-library(keras)
+install.packages("tensorflow")
 install.packages("e1071")
+library(keras)
+library(tensorflow)
 library(e1071)
+
+#solo una vez
+install_tensorflow()
 
 ######################################
 
@@ -34,8 +42,8 @@ test_indexes <- sample(1:nrow(X_test), 250)
 
 X_train_small <- X_train[train_indexes,]
 X_test_small <- X_test[test_indexes,]
-y_train_small <- y_train[train_indexes] 
-y_test_small <- y_test[test_indexes]
+y_train_small <- y_train[train_indexes]
+y_test_small <- y_test[test_indexes] 
 
 
 
