@@ -10,7 +10,7 @@ set.seed(123)
 # ==============================================================================
 # 2. CARGA Y PREPROCESAMIENTO DE LOS DATOS
 # ==============================================================================
-mnist <- dataset_mnist()  
+mnist <- dataset_mnist()  # Carga el conjunto de datos MNIST, que contiene imágenes de dígitos escritos a mano
 
 # Selección de las primeras 1000 imágenes de entrenamiento y 250 de prueba
 x_train <- mnist$train$x[1:1000, , ]  
@@ -60,8 +60,6 @@ counter <- 1
 for (L in layers_to_test) {
   for (units in initial_units_to_test) {
     for (rate in dropout_rates_to_test) {
-      cat(paste("--- Testando L=", L, " | Unidades:", units, " | Dropout:", rate, " ---\n", sep=""))
-      
       # 1. Definir o Modelo
       model_grid_test <- keras_model_sequential()
       current_units <- units
@@ -112,8 +110,6 @@ for (L in layers_to_test) {
         Loss = score$loss,
         Accuracy = score$accuracy
       )
-      
-      cat(paste("-> Accuracy:", round(score$accuracy, 4), "\n"))
       counter <- counter + 1
     }
   }
@@ -132,4 +128,54 @@ best_params <- results_df_full_grid[1, ]
 L <- best_params$Layers
 unidades_iniciales <- best_params$Initial_Units
 dropout_rate <- best_params$Dropout_Rate
+
+# Mostrar os resultados
+cat(paste("Accuracy en el test interno:", round(best_params$Accuracy, 4), "\n"))
+cat(paste("Loss en el test interno:", round(best_params$Loss, 4), "\n"))
+cat("\n")
+
+# ==============================================================================
+# 5. CREACION DEL MODELO PARA LOS 100 PRIMEROS DATOS
+# ==============================================================================
+
+# Selección de los primeros 100 datos para el entrenamiento final
+x_train_100 <- x_train[1:100, ]
+y_train_100 <- y_train[1:100, ]
+
+# 1. Definir el Modelo Final (estructura basada en best_params)
+final_model <- keras_model_sequential()
+current_units <- unidades_iniciales
+
+# Construir las L capas ocultas
+for (i in 1:L) {
+  final_model <- final_model %>%
+    layer_dense(units = current_units, activation = 'relu',
+                input_shape = if (i == 1) n_comp_95 else NULL)
+  
+  final_model <- final_model %>%
+    layer_dropout(rate = dropout_rate)
+  
+  current_units <- max(32, floor(current_units / 2)) 
+}
+
+# Capa de salida
+final_model <- final_model %>%
+  layer_dense(units = 10, activation = 'softmax')
+
+# 2. Compilar el Modelo Final
+final_model %>% compile(
+  optimizer = 'adam',
+  loss = 'categorical_crossentropy',
+  metrics = c('accuracy')
+)
+
+# 3. Entrenar el Modelo Final 
+history_final <- final_model %>% fit(
+  x_train_100, y_train_100, 
+  epochs = 0, 
+  batch_size = 32, 
+  verbose = 1 
+)
+save(final_model, file = "perceptron_model_100.RData")
+cat("Modelo guardado en 'percetron_model_100.RData'.\n")
 
