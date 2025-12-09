@@ -93,7 +93,7 @@ for (L in layers_to_test) {
       # 3. Entrenar el Modelo
       model_grid_test %>% fit(
         x_train, y_train,
-        epochs = 10,
+        epochs = 25,
         batch_size = 128,
         validation_split = 0.2,
         verbose = 0
