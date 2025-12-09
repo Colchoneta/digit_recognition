@@ -10,7 +10,7 @@ set.seed(123)
 # ==============================================================================
 # 2. CARGA Y PREPROCESAMIENTO DE LOS DATOS
 # ==============================================================================
-mnist <- dataset_mnist()  # Carga el conjunto de datos MNIST, que contiene imágenes de dígitos escritos a mano
+mnist <- dataset_mnist()  
 
 # Selección de las primeras 1000 imágenes de entrenamiento y 250 de prueba
 x_train <- mnist$train$x[1:1000, , ]  
@@ -46,90 +46,93 @@ x_test  <- predict(pca, x_test)[, 1:n_comp_95]
 
 
 # ==============================================================================
-# 3. GRID SEARCH (Layers x Dropout Rate x Unidades Iniciais)
+# 3. BÚSQUEDA EN MALLA (GRID SEARCH) (Capas x Tasa de Dropout x Unidades Iniciales)
 # ==============================================================================
 
-# Hiperparâmetros a testar
-layers_to_test <- c(1, 2, 3)          # Número de Camadas Ocultas
-initial_units_to_test <- c(256, 128)   # Unidades para a primeira camada
-dropout_rates_to_test <- c(0.2, 0.4)  # Taxas de Dropout
+# Hiperparámetros a probar
+layers_to_test <- c(1, 2, 3)           # Número de Capas Ocultas
+initial_units_to_test <- c(256, 128)   # Unidades para la primera capa
+dropout_rates_to_test <- c(0.2, 0.4)   # Tasas de Dropout
 
 results_full_grid <- list()
 counter <- 1
 
 for (L in layers_to_test) {
-  for (units in initial_units_to_test) {
-    for (rate in dropout_rates_to_test) {
-      # 1. Definir o Modelo
-      model_grid_test <- keras_model_sequential()
-      current_units <- units
-      
-      # Construir dinamicamente L camadas ocultas
-      for (i in 1:L) {
-        # Adicionar camada densa
-        model_grid_test <- model_grid_test %>%
-          layer_dense(units = current_units, activation = 'relu',
-                      input_shape = if (i == 1) n_comp_95 else NULL)
-        
-        # Adicionar camada de dropout (aplicada após cada camada oculta)
-        model_grid_test <- model_grid_test %>%
-          layer_dropout(rate = rate)
-        
-        # Reduzir unidades para a próxima camada (metade, com mínimo de 32)
-        current_units <- max(32, floor(current_units / 2)) 
-      }
-      
-      # Adicionar a camada de saída
-      model_grid_test <- model_grid_test %>%
-        layer_dense(units = 10, activation = 'softmax')
-      
-      # 2. Compilar o Modelo
-      model_grid_test %>% compile(
-        optimizer = 'adam',
-        loss = 'categorical_crossentropy',
-        metrics = c('accuracy')
-      )
-      
-      # 3. Treinar o Modelo
-      model_grid_test %>% fit(
-        x_train, y_train,
-        epochs = 10,
-        batch_size = 128,
-        validation_split = 0.2,
-        verbose = 0
-      )
-      
-      # 4. Avaliar o Modelo
-      score <- model_grid_test %>% evaluate(x_test, y_test, verbose = 0)
-      
-      # 5. Armazenar o Resultado
-      results_full_grid[[counter]] <- list(
-        Layers = L,
-        Initial_Units = units,
-        Dropout_Rate = rate,
-        Loss = score$loss,
-        Accuracy = score$accuracy
-      )
-      counter <- counter + 1
-    }
-  }
+  for (units in initial_units_to_test) {
+    for (rate in dropout_rates_to_test) {
+      # 1. Definir el Modelo
+      model_grid_test <- keras_model_sequential()
+      current_units <- units
+      
+      # Construir dinámicamente L capas ocultas
+      for (i in 1:L) {
+        # Añadir capa densa
+        model_grid_test <- model_grid_test %>%
+          layer_dense(units = current_units, activation = 'relu',
+                      input_shape = if (i == 1) n_comp_95 else NULL)
+        
+        # Añadir capa de dropout (aplicada después de cada capa oculta)
+        model_grid_test <- model_grid_test %>%
+          layer_dropout(rate = rate)
+        
+        # Reducir unidades para la próxima capa (mitad, con mínimo de 32)
+        current_units <- max(32, floor(current_units / 2)) 
+      }
+      
+      # Añadir la capa de salida
+      model_grid_test <- model_grid_test %>%
+        layer_dense(units = 10, activation = 'softmax')
+      
+      # 2. Compilar el Modelo
+      model_grid_test %>% compile(
+        optimizer = 'adam',
+        loss = 'categorical_crossentropy',
+        metrics = c('accuracy')
+      )
+      
+      # 3. Entrenar el Modelo
+      model_grid_test %>% fit(
+        x_train, y_train,
+        epochs = 10,
+        batch_size = 128,
+        validation_split = 0.2,
+        verbose = 0
+      )
+      
+      # 4. Evaluar el Modelo
+      score <- model_grid_test %>% evaluate(x_test, y_test, verbose = 0)
+      
+      # 5. Almacenar el Resultado
+      results_full_grid[[counter]] <- list(
+        Layers = L,
+        Initial_Units = units,
+        Dropout_Rate = rate,
+        Loss = score$loss,
+        Accuracy = score$accuracy
+      )
+      counter <- counter + 1
+    }
+  }
 }
 
 # ==============================================================================
-# 4. ANÁLISE DOS MELHORES HIPERPARAMETROS
+# 4. ANÁLISIS DE LOS MEJORES HIPERPARÁMETROS
 # ==============================================================================
+# Combina los resultados de todos los modelos probados en el Grid Search en un único data frame
 results_df_full_grid <- do.call(rbind, lapply(results_full_grid, as.data.frame))
 
-# Ordenar por Accuracy (o melhor no topo)
+# Ordena el data frame por Accuracy (en orden descendente, el mejor modelo queda primero)
 results_df_full_grid <- results_df_full_grid[order(-results_df_full_grid$Accuracy), ]
 
+# Selecciona los parámetros del modelo con la mayor Accuracy (la primera fila)
 best_params <- results_df_full_grid[1, ]
 
+# Asigna los valores de los mejores hiperparámetros a variables
 L <- best_params$Layers
 unidades_iniciales <- best_params$Initial_Units
 dropout_rate <- best_params$Dropout_Rate
 
-# Mostrar os resultados
+# Mostrar los resultados del mejor modelo
 cat(paste("Accuracy en el test interno:", round(best_params$Accuracy, 4), "\n"))
 cat(paste("Loss en el test interno:", round(best_params$Loss, 4), "\n"))
 cat("\n")
