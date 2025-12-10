@@ -59,7 +59,7 @@ print(tuned$best.performance)
 
 ######################################
 
-# 3) Entrenamiento de modelo final
+# 4) Entrenamiento de modelo final
 
 svm_model <- svm(
   x = X_train_small,
@@ -73,7 +73,7 @@ summary(svm_model)
 
 ######################################
 
-# 4) Evaluación modelo final
+# 5) Evaluación modelo final
 
 #predicción del modelo
 pred <- predict(svm_model, X_test_small)
@@ -91,6 +91,7 @@ cat("Precisión del modelo SVM:", accuracy, "\n")
 
 ######################################
 
-# 5) Guardar modelo final
+# 6) Guardar modelo final
+
 saveRDS(svm_model, "svm_model.RData")
 cat("\nModelo guardado como svm_model.RData\n")
