@@ -50,9 +50,9 @@ x_test  <- predict(pca, x_test)[, 1:n_comp_95]
 # ==============================================================================
 
 # Hiperparámetros a probar
-layers_to_test <- c(1, 2, 3)           # Número de Capas Ocultas
-initial_units_to_test <- c(256, 128)   # Unidades para la primera capa
-dropout_rates_to_test <- c(0.2, 0.4)   # Tasas de Dropout
+layers_to_test <- c(1, 2, 3)  # Número de Capas Ocultas
+initial_units_to_test <- c(256, 128) # Unidades para la primera capa
+dropout_rates_to_test <- c(0.2, 0.4) # Tasas de Dropout
 
 results_full_grid <- list()
 counter <- 1
@@ -93,7 +93,7 @@ for (L in layers_to_test) {
       # 3. Entrenar el Modelo
       model_grid_test %>% fit(
         x_train, y_train,
-        epochs = 10,
+        epochs = 25,
         batch_size = 128,
         validation_split = 0.2,
         verbose = 0

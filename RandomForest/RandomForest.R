@@ -1,6 +1,6 @@
 ###############################################
 # PRACTICA DIGIT RECOGNITION - RANDOM FOREST
-# Parte de Roberto - RF con 2000 train / 500 test
+# Parte de Roberto - RF con 1000 train / 250 test
 ###############################################
 
 library(randomForest)
@@ -14,18 +14,18 @@ test  <- read.csv("C:/Users/rober/Downloads/test.csv")
 # Aseguramos que la etiqueta es factor
 train$label <- factor(train$label)
 
-# 2. Submuestreo: 2000 train, 500 test interno ----------------
+# 2. Submuestreo: 1000 train, 250 test interno ----------------
 
 set.seed(123)
 
 # Elegimos 2500 ejemplos aleatorios del train original
-idx_total   <- sample(seq_len(nrow(train)), 2500)
+idx_total   <- sample(seq_len(nrow(train)), 1250)
 data_small  <- train[idx_total, ]
 
 # De esos 2500, cogemos 2000 para entrenar y 500 para test interno
-idx_train   <- sample(seq_len(nrow(data_small)), 2000)
+idx_train   <- sample(seq_len(nrow(data_small)), 1000)
 train_data  <- data_small[idx_train, ]
-test_data   <- data_small[-idx_train, ]   # el resto (500 filas)
+test_data   <- data_small[-idx_train, ]   # el resto (250 filas)
 
 # Aseguramos factor en las etiquetas
 train_data$label <- factor(train_data$label)
@@ -67,7 +67,7 @@ conf_mat <- confusionMatrix(pred_test, y_test)
 print(conf_mat)
 
 accuracy <- conf_mat$overall["Accuracy"]
-cat("Accuracy en el test interno (500 ejemplos):", accuracy, "\n")
+cat("Accuracy en el test interno (250 ejemplos):", accuracy, "\n")
 
 # 6. Importancia de variables (píxeles) -----------------------
 

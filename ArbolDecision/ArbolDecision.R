@@ -10,7 +10,7 @@ library(adabag)
 
 mnist <- read_mnist()
 set.seed(123)
-idx <- sample(nrow(mnist$train$images), 2500)
+idx <- sample(nrow(mnist$train$images), 1250)
 mnist$train$images <- mnist$train$images[idx, ]
 mnist$train$labels <- mnist$train$labels[idx]
 
@@ -19,7 +19,7 @@ mnist_dataset$label <- mnist$train$label
 mnist_dataset$label <- as.factor(mnist_dataset$label)
 mnist_dataset # dataset final
 
-idx_train <- sample(2500, 2000)
+idx_train <- sample(1250, 1000)
 dtrain <- mnist_dataset[idx_train,]
 dtest <- mnist_dataset[-idx_train,]
 
